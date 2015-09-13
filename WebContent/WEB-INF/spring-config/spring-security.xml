@@ -1,0 +1,52 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security" xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- -->
+    <beans:bean id="formLoginAuthenticationDetailsSource" class="com.blogspot.dinhtienthuan.security.FormLoginAuthenticationDetailsSource" />
+
+    <beans:bean id="formLoginAuthenticationFilter" class="com.blogspot.dinhtienthuan.security.FormLoginAuthenticationFilter">
+        <beans:property name="authenticationManager" ref="authenticationManager" />
+        <beans:property name="authenticationDetailsSource" ref="formLoginAuthenticationDetailsSource" />
+        <beans:property name="postOnly" value="true" />
+    </beans:bean>
+
+    <beans:bean id="formLoginAuthenticationProvider" class="com.blogspot.dinhtienthuan.security.FormLoginAuthenticationProvider" />
+    <!-- -->
+
+
+    <beans:bean id="preAuthenticationDetailsSource" class="com.blogspot.dinhtienthuan.security.PreAuthenticationDetailsSource" />
+
+    <beans:bean id="preAuthenticationUserDetailsService" class="com.blogspot.dinhtienthuan.security.PreAuthenticationUserDetailsService" />
+
+    <beans:bean id="preAuthenticatedProcessingFilter" class="com.blogspot.dinhtienthuan.security.PreAuthenticationFilter">
+        <beans:property name="authenticationManager" ref="authenticationManager" />
+        <beans:property name="authenticationDetailsSource" ref="preAuthenticationDetailsSource" />
+    </beans:bean>
+
+    <beans:bean id="preAuthenticatedAuthenticationProvider"
+        class="org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider">
+        <beans:property name="preAuthenticatedUserDetailsService" ref="preAuthenticationUserDetailsService" />
+    </beans:bean>
+
+    <authentication-manager alias="authenticationManager">
+        <authentication-provider ref="preAuthenticatedAuthenticationProvider" />
+        <authentication-provider ref="formLoginAuthenticationProvider" />
+    </authentication-manager>
+
+
+    <beans:bean id="http403EntryPoint" class="org.springframework.security.web.authentication.Http403ForbiddenEntryPoint" />
+
+    <http create-session="ifRequired" auto-config="false" use-expressions="true" entry-point-ref="http403EntryPoint">
+        <custom-filter ref="formLoginAuthenticationFilter" position="FORM_LOGIN_FILTER" />
+        <custom-filter position="PRE_AUTH_FILTER" ref="preAuthenticatedProcessingFilter" />
+        <intercept-url pattern="/login" access="permitAll" />
+        <intercept-url pattern="/**" access="isAuthenticated()" />
+        <!-- <form-login login-page="/login" authentication-details-source-ref="authenticationDetailsSource" authentication-failure-url="/login" 
+            login-processing-url="/login" /> -->
+    </http>
+
+
+
+</beans:beans>
